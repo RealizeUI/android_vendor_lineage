@@ -1,0 +1,7 @@
+RealizeUI vendor_lineage
+=========================
+
+Vendor framework for RealizeUI branch 16, based on LineageOS 23.2.
+
+RealizeUI-specific changes are kept compatible with the upstream
+vendor framework and are maintained in this repository.

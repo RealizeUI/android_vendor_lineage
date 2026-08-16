@@ -1,0 +1,45 @@
+PRODUCT_VERSION_MAJOR = 16
+PRODUCT_VERSION_MINOR = 0
+
+ifeq ($(REALIZEUI_VERSION_APPEND_TIME_OF_DAY),true)
+    REALIZEUI_BUILD_DATE := $(shell date -u +%Y%m%d_%H%M%S)
+else
+    REALIZEUI_BUILD_DATE := $(shell date -u +%Y%m%d)
+endif
+
+# Set REALIZEUI_BUILDTYPE from the env RELEASE_TYPE, for jenkins compat
+
+ifndef REALIZEUI_BUILDTYPE
+    ifdef RELEASE_TYPE
+        # Starting with "LINEAGE_" is optional
+        RELEASE_TYPE := $(shell echo $(RELEASE_TYPE) | sed -e 's|^LINEAGE_||g')
+        REALIZEUI_BUILDTYPE := $(RELEASE_TYPE)
+    endif
+endif
+
+# Filter out random types, so it'll reset to UNOFFICIAL
+ifeq ($(filter RELEASE NIGHTLY SNAPSHOT EXPERIMENTAL,$(REALIZEUI_BUILDTYPE)),)
+    REALIZEUI_BUILDTYPE := UNOFFICIAL
+    REALIZEUI_EXTRAVERSION :=
+endif
+
+ifeq ($(REALIZEUI_BUILDTYPE), UNOFFICIAL)
+    ifneq ($(TARGET_UNOFFICIAL_BUILD_ID),)
+        REALIZEUI_EXTRAVERSION := -$(TARGET_UNOFFICIAL_BUILD_ID)
+    endif
+endif
+
+REALIZEUI_VERSION_SUFFIX := $(REALIZEUI_BUILD_DATE)-$(REALIZEUI_BUILDTYPE)$(REALIZEUI_EXTRAVERSION)-$(REALIZEUI_BUILD)
+
+# Internal version
+REALIZEUI_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(REALIZEUI_VERSION_SUFFIX)
+
+# Display version
+REALIZEUI_DISPLAY_VERSION := $(PRODUCT_VERSION_MAJOR)-$(REALIZEUI_VERSION_SUFFIX)
+
+# LineageOS version properties
+PRODUCT_PRODUCT_PROPERTIES += \
+    ro.realizeui.version=$(REALIZEUI_VERSION) \
+    ro.realizeui.display.version=$(REALIZEUI_DISPLAY_VERSION) \
+    ro.realizeui.build.version=$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR) \
+    ro.realizeui.releasetype=$(REALIZEUI_BUILDTYPE)
